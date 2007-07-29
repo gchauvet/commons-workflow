@@ -1,0 +1,37 @@
+<base:activity id="Web Wizard Demo"
+   xmlns:base="http://jakarta.apache.org/commons/workflow/base"
+   xmlns:core="http://jakarta.apache.org/commons/workflow/core"
+   xmlns:io="http://jakarta.apache.org/commons/workflow/io"
+   xmlns:web="http://jakarta.apache.org/commons/workflow/web">
+
+  <!-- Reset the session bean properties -->
+  <core:invoke id="wizard-0" method="reset">
+    <core:descriptor name="bean" scope="session"/>
+  </core:invoke>
+
+  <!-- Display page 1 of 3 -->
+  <web:forward id="wizard-1" page="/wizard-1.jsp"/>
+  <web:populate id="populate-1">
+    <web:descriptor name="bean" scope="session"/>
+  </web:populate>
+  <web:goto id="goto-1"/>
+
+  <!-- Display page 2 of 3 -->
+  <web:forward id="wizard-2" page="/wizard-2.jsp"/>
+  <web:populate id="populate-2">
+    <web:descriptor name="bean" scope="session"/>
+  </web:populate>
+  <web:goto id="goto-2"/>
+
+  <!-- Display page 3 of 3 -->
+  <web:forward id="wizard-3" page="/wizard-3.jsp"/>
+  <web:populate id="populate-3">
+    <web:descriptor name="bean" scope="session"/>
+  </web:populate>
+  <web:goto id="goto-3"/>
+
+  <!-- Display the summary page -->
+  <web:forward id="finish" page="/finish.jsp"/>
+  <core:goto id="finish-goto" step="wizard-0"/>
+
+</base:activity>

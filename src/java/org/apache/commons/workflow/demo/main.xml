@@ -1,0 +1,40 @@
+<base:activity id="Demonstration Activity"
+   xmlns:base="http://jakarta.apache.org/commons/workflow/base"
+   xmlns:core="http://jakarta.apache.org/commons/workflow/core"
+   xmlns:io="http://jakarta.apache.org/commons/workflow/io"
+   xmlns:web="http://jakarta.apache.org/commons/workflow/web">
+
+  <core:string id="01" value="This is a string value"/>
+
+  <core:put id="02">
+    <core:descriptor name="foo"/>
+  </core:put>
+
+  <core:get id="03">
+    <core:descriptor xpath="foo"/>
+  </core:get>
+
+  <io:peek id="04"/>
+
+  <core:pop id="05"/>
+
+  <core:string id="06" value="Non-null String"/>
+
+  <core:if id="07">
+    <core:descriptor/> <!-- Top of stack value -->
+    <core:string id="07a" value="Correctly exected the conditional"/>
+    <io:peek id="07b"/>
+    <core:pop id="07c"/>
+  </core:if>
+
+  <core:string id="08" value="Non-null String"/>
+
+  <core:while id="09">
+    <core:descriptor/>
+    <core:string id="09a" value="While should iterate once"/>
+    <io:peek id="09b"/>
+    <core:pop id="09c"/>
+    <core:string id="09d" value=""/>
+  </core:while>
+
+</base:activity>

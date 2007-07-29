@@ -1,0 +1,206 @@
+<body>
+<p>Implementations of <code>Steps</code> in the <em>web</em> library.</p>
+
+<div align="center">
+<h2>Web Step Library - Overview</h2>
+</div>
+
+<p>This package contains
+<a href="../Step.html">org.apache.commons.workflow.Step</a> implementations
+for the <em>web</em> library.  This library includes Steps for that are
+executed in a web application, utilizing the
+<code>org.apache.commons.workflow.web.WebContext</code> implementation
+of Context.  Utilizing this feature makes the request, session, and
+application scope attributes of the servlet API available to workflows
+as Scopes named "request", "session", and "application", respectively.</p>
+
+<p>The sections below define each of the Step definitions included in this
+library, utilizing the XML syntax that is recognized by the Digester used to
+process your Activity definition files.  Although you can use any namespace
+prefix, the convention is to declare <code>io</code> as the namespace prefix,
+as in the following example:</p>
+<pre>
+  &lt;base:activity id="Demonstration Activity"
+    xmlns:base="http://jakarta.apache.org/commons/workflow/base"
+    xmlns:core="http://jakarta.apache.org/commons/workflow/core"
+    xmlns:web="http://jakarta.apache.org/commons/workflow/web"
+  &gt;
+
+    &lt;web:forward page="/mainMenu.jsp"/&gt;
+
+  &lt;/base:activity&gt;
+</pre>
+
+<p><em>NOTE</em> - It is <strong>not</strong> required that you use the XML
+syntax, processed with a Digester, to initialize the Steps associated with
+each Activity.  However, this usage is very convenient, and is likely to be
+the most common case, so the Steps are documented from that perspective.  To
+use the underlying implementation classes directly, see the Javadocs for each
+Step implementation class, just as you would for any other Java class.</p>
+
+<div align="center">
+[<a href="#web:forward">web:forward</a>]
+[<a href="#web:goto">web:goto</a>]
+[<a href="#web:include">web:include</a>]
+[<a href="#web:populate">web:populate</a>]
+</div>
+
+<div align="center">
+<h2>Web Step Library - Step Definitions</h2>
+</div>
+
+<a name="web:forward"></a>
+<h3>web:forward</h3>
+
+<p>The <em>web:forward</em> Step performs a RequestDispatcher.forward()
+call to the specified context-relative URL, and then tells our
+Context to suspend execution until the application calls
+<code>context.execute()</code> again.  This is useful in MVC-based
+application architectures using a controller servlet to receive and
+process all events.</p>
+
+<p>The <em>web:forward</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>page</strong> - Context-relative URL (starting with a slash)
+    of the application resource to be forwarded to.  If not specified,
+    the top value on the evaluation stack is popped, converted to a String
+    (if necessary), and used as the context-relative URL value.</li>
+</ul>
+
+
+<a name="web:goto"></a>
+<h3>web:goto</h3>
+
+<p>The <em>web:goto</em> Step unconditionally transfers control to the
+Step that is identified by a request parameter with the specified name.</p>
+
+<p>The <em>web:goto</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>step</strong> - Name of a request parameter, which must be
+    included in the current request, whose value is the identifier of the
+    Step (within the current Activity) to which control should be transferred.
+    If not specified, a request parameter named <code>step</code> is used.</li>
+</ul>
+
+<a name="web:include"></a>
+<h3>web:include</h3>
+
+<p>The <em>web:include</em> Step performs a
+<code>RequestDispatcher.include()</code> operation on the specified
+context-relative path, and pushes the response data (as a String) on to
+the evaluation stack.  <strong>WARNING</strong> - This Step is only available
+on servlet contiainers implementing the Servlet 2.3 (or later) specification,
+because it uses the new response wrapper facilities.</p>
+
+<p>The <em>web:include</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>page</strong> - Context-relative URL (starting with a slash)
+    of the application resource to be included.  If not specified,
+    the top value on the evaluation stack is popped, converted to a String
+    (if necessary), and used as the context-relative URL value.</li>
+</ul>
+
+
+<a name="web:populate"></a>
+<h3>web:populate</h3>
+
+<p>The <em>web:populate</em> Step, for each nested Descriptor, populates the
+properties of the bean specified by that Descriptor from the request parameters
+of the current request.</p>
+
+<p>The <em>web:populate</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>You may nest any number of <a href="#web:descriptor">io:descriptor</a>
+elements within a <em>web:populate</em> element.  All of them will be evaluated
+and displayed in order specified.</p>
+
+<p>In the example below, the request parameters included with the current
+request are used to populate the properties of an OrderBean stored under
+the identifier "order".</p>
+<pre>
+  <strong>&lt;web:populate&gt;</strong>
+    &lt;web:descriptor xpath="order"/&gt;
+  <strong>&lt;/web:populate&gt;</strong>
+</pre>
+
+
+<div align="center">
+<h2>Web Step Library - Nested Elements</h2>
+</div>
+
+<a name="web:descriptor"></a>
+<h3>web:descriptor</h3>
+
+<p>An <em>web:descriptor</em> element is a description of the mechanism
+by which an arbitrary Java object (typically a JavaBean) in some Scope, is
+referenced.  This element recognizes the following attributes:</p>
+<ul>
+<li><strong>name</strong> - The name under which this bean is stored,
+    optionally located in the Scope specified by the <code>scope</code>
+    attribute.</li>
+<li><strong>scope</strong> - The name of the Scope within which to
+    search for the bean named by the <code>name</code> attribute.  If
+    not specified, the corresponding bean will be searched for in all Scopes,
+    in ascending numeric order.</li>
+<li><strong>type</strong> - Fully qualified Java class name that is expected
+    (or set) via this descriptor.  If not specified, the actual Java class of the
+    corresponding bean will be used.  This is useful, for example, when
+    specifying the arguments to a <a href="#web:invoke">web:invoke</a>
+    Step, and the invoked method expects a Java interface that is implemented
+    by the actual object being passed as a parameter.</li>
+<li><strong>xpath</strong> - An alternative method (to the <code>name</code>
+    and <code>scope</code> attributes) for specifying the bean instance to be
+    accessed by this descriptor.</li>
+</ul>
+
+<p>The syntax for XPath expressions is a sequence of one or more
+identifier strings, separated by forward slash ("/") characters.  The expression
+is evaluated as follows:</p>
+<ul>
+<li>If no slashes are present, the expression is assumed to be the name
+    of an object that is stored in the "local" scope.</li>
+<li>If one slash is present, the value before the slash is assumed to be the
+    name of the scope in which to locate the bean, while the value after the
+    slash is the name under which the bean is stored in that scope.  For
+    example, the WebContext implementation of Context (commonly used
+    when implementing Workflow in a servlet based environment), the scope
+    names "request", "session", and "application" correspond to the
+    request attributes, session attributes, and servlet context attributes
+    provided by the underlying servlet container.</li>
+<li>If more than one slash is present, the value before the first slash
+    is interpreted as a scope name, as above.  The remainder of the
+    expression accessed nested properties of beans, according to the
+    syntax specified by the Commons JXPath package.</li>
+</ul>
+
+<p>When deciding what bean a particular descriptor applies to, the following
+rules are applied, in this priority order:</p>
+<ul>
+<li>If the <em>xpath</em> attribute is set, it is used as an
+    XPath expression identifying the requested object.</li>
+<li>If the <em>name</em> (and optional <em>scope</em>) attributes are
+    specified, they are used to select a particular named bean,
+    optionally found in a particular named scope.</li>
+<li>If none of the conditions above are satisfied, the top object on the
+    evaluation stack of our current <code>Context</code> is popped off the
+    stack and consumed.</li>
+</ul>
+
+<p><strong>FIXME</strong> - Support the <code>property</code> attribute
+for access to bean properties via the Commons Beanutils package.</p>
+
+</body>

@@ -1,0 +1,31 @@
+# build.properties.sample - Sample build.properties for "workflow"
+
+# Base properties for expansion below
+commons.home=../../jakarta-commons
+sandbox.home=../../jakarta-commons-sandbox
+jaxp.home=/usr/local/jaxp-1.1
+junit.home=/usr/local/junit3.7
+
+# Derived home directories
+beanutils.home=${commons.home}/beanutils
+collections.home=${commons.home}/collections
+digester.home=${commons.home}/digester
+jpath.home=${sandbox.home}/jpath
+logging.home=${commons.home}/logging
+servletapi.home=../../jakarta-servletapi-4
+
+# Jakarta JAR files
+commons-beanutils.jar=${beanutils.home}/dist/commons-beanutils.jar
+commons-collections.jar=${collections.home}/dist/commons-collections.jar
+commons-digester.jar=${digester.home}/dist/commons-digester.jar
+commons-logging.jar=${logging.home}/dist/commons-logging.jar
+servlet.jar=${servletapi.home}/lib/servlet.jar
+
+# External packages
+jaxp.jaxp.jar=${jaxp.home}/jaxp.jar
+jaxp.parser.jar=${jaxp.home}/crimson.jar
+jaxp.xalan.jar=${jaxp.home}/xalan.jar
+junit.jar=${junit.home}/junit.jar
+
+# URL for the "get" test in IOExecuteTestCase
+ioexecute.url=http://localhost:8080/index.html

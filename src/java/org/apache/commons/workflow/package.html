@@ -1,0 +1,60 @@
+<body>
+<p>This package contains the core interfaces and classes that define the major
+components of the workflow management system.  There are divided into several
+categories, as follows.</p>
+
+<p>The static representation of a set of possible workflows is represented
+internally as a tree of objects that implement the following interfaces.
+There is a one-to-many relationship between each component and the one
+immediately below it.</p>
+<ul>
+<li><strong>Process</strong> - A "business process" that is composed of several
+    independent activities, possibly executed by different individuals at
+    different times.  <em>NOTE - not yet implemented</em>.</li>
+<li><strong>Activity</strong> - A particular "business task" that may be
+    comprised of one or more discrete computations, typically involving
+    interaction with a single individual in a manner that is outside the
+    scope of the workflow system.</li>
+<li><strong>Step</strong> - A discrete computation that can be performed as
+    part of an <code>Activity</code>.  Informally, the set of defined
+    <code>Steps</code> can be considered to be the "instruction set" of a
+    "workflow computer".  Several sets of predefined <code>Step</code>
+    implementations are included, and additional sets can be defined by
+    workflow implementations layered on top of the basic classes (for example,
+    the web-layer Steps are valid only within a web application, but such
+    a workflow implementation can still use all of the core Steps).</li>
+</ul>
+
+<p>The components described above are typically represented textually in an
+XML document whose format is not of interest to the core platform.  However,
+the internal representation of these components is shared among concurrent
+users of those components, so the corresponding object tree (and the bean
+properties used to represent the linkages) should be considered read only
+after it is constructed.</p>
+
+<p>The dynamic state of a computation is represented by the following
+components.  Each "in progress" computation, whether executed by the same
+thread or different threads, <em>must</em> have its own <code>Context</code>
+to represent the current state.</p>
+<ul>
+<li><strong>Context</strong> - The current execution state of a particular
+    <code>Activity</code>.  Each <code>Context</code> provides an evaluation
+    stack for in-process computations, plus access to one or more
+    <code>Scopes</code> for interacting with the object model of the
+    surrounding application environment.</li>
+<li><strong>Scope</strong> - An implementation of <code>java.util.Map</code>
+    that provides a pluggable mechanism to attach the workflow engine to the
+    object model of a surrounding application.  Every <code>Context</code>
+    provides at least one <code>Scope</code> (called "local"), and
+    additional <code>Scopes</code> can be registered by the application.
+    For example, a web application implementation of the workflow system
+    would typically register <code>Scope</code> implementations that map
+    to the attributes of servlet requests, HTTP sessions, and the servlet
+    context.  Implementations in other environments can provide
+    <code>Scope</code> adapters to their own object storage mechanisms,
+    without affecting how <code>Step</code> implementations interact with
+    beans stored in those <code>Scopes</code>.</lI>
+</ul>
+
+
+</body>

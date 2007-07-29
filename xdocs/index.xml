@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+<document>
+
+ <properties>
+  <title>Overview</title>
+  <author email="commons-dev@jakarta.apache.org">Commons Documentation Team</author>
+ </properties>
+
+ <body>
+
+<section name="The Workflow Component">
+
+<p>Modern application architecture and design practices recommend the concept
+of "composition" (of existing modules and components) in the assembly of an
+overall application, to maximize the resuse of previously built functionality.
+However, it is still generally necessary to write original code that "glues"
+the components together.  It would be useful if individuals familiar with the
+business requirements of their systems could create "scripts" to represent
+the linkages between components, rather than requiring Java code.  The
+<em>Workflow</em> proposal intends to create support for just such a
+capability.</p>
+
+<p>Scripted workflows is an idea that can be used in many different
+application environments and use cases.  In particular, a highly desired use
+is in managing the interaction with web application users, where the
+transaction being performed requires more than one HTML page to be displayed.
+However, the <em>Workflow</em> implementation will be strictly layered so
+that the underlying scripting engine can be used without any reliance on
+web layer APIs</p>
+
+<p>The <em>Workflow</em> project shall create and maintain an engine to
+manage and execute scripts, codified in XML.  The basic engine shall be
+environment independent, but specialized implementations of the basic engine
+can adapt the engine to that environment.</p>
+
+<p>One specialized implementation will be included in the <em>Workflow</em>
+package itself - an adapter to integrate the workflow engine into the web
+layer, by mapping the Workflow concept of bean scopes into the scopes
+provided by the Servlet API (request, session, and application).  This
+implementation will be independent of any particular web application
+framework - it is expected that frameworks will further specialize the
+web layer implementation in order to integrate the framework's own
+capabilities and features.</p>
+
+<p>Scripts for the workflow engine will be codified in XML.  It shall be
+possible for specialized implementations to register their own sets of custom
+Step implementations, under a specific XML namespace, to transparently extend
+the set of built in Step implementations that is available to workflow
+engine users.</p>
+
+</section>
+
+<section name="Releases">
+    <p>
+       See the <a href="downloads.html">downloads</a> page for information on obtaining releases.
+    </p>
+<br/><br/><br/>
+</section>
+
+<section name="Documentation">
+  <p>
+     The <a href="apidocs/index.html">JavaDoc API documents</a> are available online.
+  </p>
+</section>
+
+</body>
+</document>

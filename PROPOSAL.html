@@ -1,0 +1,109 @@
+<html>
+<head>
+<title>Proposal for Workflow Package</title>
+</head>
+<body bgcolor="white">
+
+<div align="center">
+<h1>Proposal for <em>Workflow</em> Package</h1>
+</div>
+
+<h3>(0) Rationale</h3>
+
+<p>Modern application architecture and design practices recommend the concept
+of "composition" (of existing modules and components) in the assembly of an
+overall application, to maximize the resuse of previously built functionality.
+However, it is still generally necessary to write original code that "glues"
+the components together.  It would be useful if individuals familiar with the
+business requirements of their systems could create "scripts" to represent
+the linkages between components, rather than requiring Java code.  The
+<em>Workflow</em> proposal intends to create support for just such a
+capability.</p>
+
+<p>Scripted workflows is an idea that can be used in many different
+application environments and use cases.  In particular, a highly desired use
+is in managing the interaction with web application users, where the
+transaction being performed requires more than one HTML page to be displayed.
+However, the <em>Workflow</em> implementation will be strictly layered so
+that the underlying scripting engine can be used without any reliance on
+web layer APIs</p>
+
+
+<h3>(1) Scope of the Package</h3>
+
+<p>The <em>Workflow</em> project shall create and maintain an engine to
+manage and execute scripts, codified in XML.  The basic engine shall be
+environment independent, but specialized implementations of the basic engine
+can adapt the engine to that environment.</p>
+
+<p>One specialized implementation will be included in the <em>Workflow</em>
+package itself - an adapter to integrate the workflow engine into the web
+layer, by mapping the Workflow concept of bean scopes into the scopes
+provided by the Servlet API (request, session, and application).  This
+implementation will be independent of any particular web application
+framework - it is expected that frameworks will further specialize the
+web layer implementation in order to integrate the framework's own
+capabilities and features.</p>
+
+<p>Scripts for the workflow engine will be codified in XML.  It shall be
+possible for specialized implementations to register their own sets of custom
+Step implementations, under a specific XML namespace, to transparently extend
+the set of built in Step implementations that is available to workflow
+engine users.</p>
+
+
+<h3>(1.5) Interaction With Other Packages</h3>
+
+<p><em>Digester</em> relies on:
+</p>
+
+<ul>
+  <li>Java Development Kit (Version 1.2 or later)</li>
+  <li>A JAXP 1.1 implementation</li>
+  <li>A SAX 2.0 parser conforming to the JAXP 1.1 APIs</li>
+  <li>BeanUtils from Commons - for instrospection information</li>
+  <li>Collections from Commons - for object collections</li>
+  <li>Digester from Commons - for parsing scripts in XML</li>
+  <li>Servlet API - for web integration layer only</li>
+</ul>
+
+<h3>(2) Initial Source of the Package</h3>
+
+<p>This package represents a new approach to the workflow management process,
+so no initial codebase has been identified.</p>
+
+<p>The proposed package name for the new component is
+<code>org.apache.commons.workflow</code>, with subpackages for implementations
+of the basic interfaces.</p>
+
+<h3>(3) Required Jakarta-Commons Resources</h3>
+
+<ul>
+
+<li>SVN repository - New directory <code>workflow</code> in the 
+<code>jakarta-commons</code> SVN repository.</li>
+
+<li>Mailing List - Discussions will take place on the general
+<em>jakarta-commons@jakarta.apache.org</em> mailing list. To help list
+subscribers identify messages of interest, it is suggested that the
+message subject of messages about this component be prefixed with
+[Workflow].</li>
+
+<li>Bugzilla - New component "Workflow" under the "Commons" product
+category, with appropriate version identifiers as needed.</li>
+
+<li>Jyve FAQ - New category "commons-workflow" (when available).</li>
+</ul>
+
+
+<h3>(4) Initial Committers</h3>
+
+<p>The initial committers on the Workflow component shall be:</p>
+
+<ul>
+  <li>Craig R. McClanahan</li>
+  <li>TBD</li>
+</ul>
+
+</body>
+</html>

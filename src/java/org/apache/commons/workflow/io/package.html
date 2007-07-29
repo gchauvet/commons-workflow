@@ -1,0 +1,237 @@
+<body>
+<p>Implementations of <code>Steps</code> in the <em>io</em> library.</p>
+
+<div align="center">
+<h2>I/O Step Library - Overview</h2>
+</div>
+
+<p>This package contains
+<a href="../Step.html">org.apache.commons.workflow.Step</a> implementations
+for the <em>io</em> library.  This library includes Steps for importing
+information from (or exporting information to) external locations.</p>
+
+<p>The sections below define each of the Step definitions included in this
+library, utilizing the XML syntax that is recognized by the Digester used to
+process your Activity definition files.  Although you can use any namespace
+prefix, the convention is to declare <code>io</code> as the namespace prefix,
+as in the following example:</p>
+<pre>
+  &lt;base:activity id="Demonstration Activity"
+    xmlns:base="http://jakarta.apache.org/commons/workflow/base"
+    xmlns:core="http://jakarta.apache.org/commons/workflow/core"
+    xmlns:io="http://jakarta.apache.org/commons/workflow/io"
+  &gt;
+
+    &lt;io:write file="topitem.txt"/&gt;
+
+  &lt;/base:activity&gt;
+</pre>
+
+<p><em>NOTE</em> - It is <strong>not</strong> required that you use the XML
+syntax, processed with a Digester, to initialize the Steps associated with
+each Activity.  However, this usage is very convenient, and is likely to be
+the most common case, so the Steps are documented from that perspective.  To
+use the underlying implementation classes directly, see the Javadocs for each
+Step implementation class, just as you would for any other Java class.</p>
+
+<div align="center">
+[<a href="#io:display">io:display</a>]
+[<a href="#io:get">io:get</a>]
+[<a href="#io:peek">io:peek</a>]
+[<a href="#io:read">io:read</a>]
+[<a href="#io:write">io:write</a>]
+</div>
+
+<div align="center">
+<h2>I/O Step Library - Step Definitions</h2>
+</div>
+
+<a name="io:display"></a>
+<h3>io:display</h3>
+
+<p>The <em>io:display</em> Step evaluates the properties specified by
+all nested <code>&lt;io:descriptor&gt;</code> elements, converts them to
+String (if necessary), and prints them to Java's standard output.</p>
+
+<p>The <em>io:display</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>You may nest any number of <a href="#io:descriptor">io:descriptor</a>
+elements within a <em>io:display</em> element.  All of them will be evaluated
+and displayed in order specified.</p>
+
+<p>In the following example, the "address" and "customer" beans will
+be converted to Strings (by calling their <code>toString()</code> methods)
+and the results displayed to standard output.</p>
+<pre>
+  <strong>&lt;io:display &gt;</strong>
+    &lt;io:descriptor xpath="address"/&gt;
+    &lt;io:descriptor xpath="customer"/&gt;
+  <strong>&lt;/io:display&gt;</strong>
+</pre>
+
+
+<a name="io:get"></a>
+<h3>io:get</h3>
+
+<p>The <em>io:get</em> Step connects to a specified URL, retrieves the
+corresponding value as a String, and pushes the result on to the evaluation
+stack.</p>
+
+<p>The <em>io:get</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>url</strong> - URL of the resource to be retrieved.</li>
+</ul>
+
+<p>In the following example, the home page of a local web server is
+retrieved and pushed on to the evaluation stack as a String:</p>
+<pre>
+  <strong>&lt;io:get url="http://localhost:8080/index.html"/&gt;</strong>
+</pre>
+
+
+<a name="io:peek"></a>
+<h3>io:peek</h3>
+
+<p>The <em>io:peek</em> Step makes a copy of the top item on the
+evaluation stack, converts it to a String (if necesary), and prints it to
+standard output.  This is useful for debugging, and is shorthand for
+the following:</p>
+<pre>
+  &lt;core:duplicate/&gt;
+  &lt;io:display&gt;
+    &lt;io:descriptor/&gt;
+  &lt;/io:display&gt;
+</pre>
+
+<p>The <em>io:peek</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+
+<a name="io:read"></a>
+<h3>io:read</h3>
+
+<p>The <em>io:read</em> Step reads the characters of the specified file,
+converts them to a String, and pushes this String on to the evaluation stack.
+</p>
+
+<p>The <em>io:read</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>encoding</strong> - Character encoding to use when reading
+    this file.  If not specified, the platform default encoding will be used.</li>
+<li><strong>file</strong> - Relative or absolute pathname of the file to
+    be read by this Step.</li>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the example below, the contents of the specified file are read,
+converted to a String, and pushed on to the evaluation stack:</p>
+<pre>
+  <strong>&lt;io:read file="data.txt"/&gt;</strong>
+</pre>
+
+
+<a name="io:write"></a>
+<h3>io:write</h3>
+
+<p>The <em>io:write</em> Step pops the top item from the evaluation
+stack, converts it to a String (if necessary), and writes the characters
+to the specified file.</p>
+
+<p>The <em>io:write</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>encoding</strong> - Character encoding to use when writing
+    this file.  If not specified, the platform default encoding will be used.</li>
+<li><strong>file</strong> - Relative or absolute pathname of the file to
+    be written by this Step.</li>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the example below, the contents of the specified file are written
+based on the contents of the popped evaluation stack element:</p>
+<pre>
+  <strong>&lt;io:write file="data.txt"/&gt;</strong>
+</pre>
+
+
+<div align="center">
+<h2>I/O Step Library - Nested Elements</h2>
+</div>
+
+<a name="io:descriptor"></a>
+<h3>io:descriptor</h3>
+
+<p>An <em>io:descriptor</em> element is a description of the mechanism
+by which an arbitrary Java object (typically a JavaBean) in some Scope, is
+referenced.  This element recognizes the following attributes:</p>
+<ul>
+<li><strong>name</strong> - The name under which this bean is stored,
+    optionally located in the Scope specified by the <code>scope</code>
+    attribute.</li>
+<li><strong>scope</strong> - The name of the Scope within which to
+    search for the bean named by the <code>name</code> attribute.  If
+    not specified, the corresponding bean will be searched for in all Scopes,
+    in ascending numeric order.</li>
+<li><strong>type</strong> - Fully qualified Java class name that is expected
+    (or set) via this descriptor.  If not specified, the actual Java class of the
+    corresponding bean will be used.  This is useful, for example, when
+    specifying the arguments to a <a href="#io:invoke">io:invoke</a>
+    Step, and the invoked method expects a Java interface that is implemented
+    by the actual object being passed as a parameter.</li>
+<li><strong>xpath</strong> - An alternative method (to the <code>name</code>
+    and <code>scope</code> attributes) for specifying the bean instance to be
+    accessed by this descriptor.</li>
+</ul>
+
+<p>The syntax for XPath expressions is a sequence of one or more
+identifier strings, separated by forward slash ("/") characters.  The expression
+is evaluated as follows:</p>
+<ul>
+<li>If no slashes are present, the expression is assumed to be the name
+    of an object that is stored in the "local" scope.</li>
+<li>If one slash is present, the value before the slash is assumed to be the
+    name of the scope in which to locate the bean, while the value after the
+    slash is the name under which the bean is stored in that scope.  For
+    example, the WebContext implementation of Context (commonly used
+    when implementing Workflow in a servlet based environment), the scope
+    names "request", "session", and "application" correspond to the
+    request attributes, session attributes, and servlet context attributes
+    provided by the underlying servlet container.</li>
+<li>If more than one slash is present, the value before the first slash
+    is interpreted as a scope name, as above.  The remainder of the
+    expression accessed nested properties of beans, according to the
+    syntax specified by the Commons JXPath package.</li>
+</ul>
+
+<p>When deciding what bean a particular descriptor applies to, the following
+rules are applied, in this priority order:</p>
+<ul>
+<li>If the <em>xpath</em> attribute is set, it is used as an
+    XPath expression identifying the requested object.</li>
+<li>If the <em>name</em> (and optional <em>scope</em>) attributes are
+    specified, they are used to select a particular named bean,
+    optionally found in a particular named scope.</li>
+<li>If none of the conditions above are satisfied, the top object on the
+    evaluation stack of our current <code>Context</code> is popped off the
+    stack and consumed.</li>
+</ul>
+
+<p><strong>FIXME</strong> - Support the <code>property</code> attribute
+for access to bean properties via the Commons Beanutils package.</p>
+
+</body>

@@ -1,0 +1,1088 @@
+<body>
+<p>Implementations of <code>Steps</code> in the <em>core</em> library.</p>
+
+<div align="center">
+<h2>Core Step Library - Overview</h2>
+</div>
+
+<p>This package contains
+<a href="../Step.html">org.apache.commons.workflow.Step</a> implementations
+for the <em>core</em> library.  This library includes Steps for fundamental
+object stack manipulation, as well as conditional branching.  Such Steps are
+commonly required in defining Activities, no matter what domain you are using
+the Workflow system in.</p>
+
+<p>The sections below define each of the Step definitions included in this
+library, utilizing the XML syntax that is recognized by the Digester used to
+process your Activity definition files.  Although you can use any namespace
+prefix, the convention is to declare <code>core</code> as the namespace prefix,
+as in the following example:</p>
+<pre>
+  &lt;base:activity id="Demonstration Activity"
+    xmlns:base="http://jakarta.apache.org/commons/workflow/base"
+    xmlns:core="http://jakarta.apache.org/commons/workflow/core"
+  &gt;
+
+    &lt;core:string value="This is a string value"/&gt;
+
+  &lt;/base:activity&gt;
+</pre>
+
+<p><em>NOTE</em> - It is <strong>not</strong> required that you use the XML
+syntax, processed with a Digester, to initialize the Steps associated with
+each Activity.  However, this usage is very convenient, and is likely to be
+the most common case, so the Steps are documented from that perspective.  To
+use the underlying implementation classes directly, see the Javadocs for each
+Step implementation class, just as you would for any other Java class.</p>
+
+<div align="center">
+[<a href="#core:and">core:and</a>]
+[<a href="#core:call">core:call</a>]
+[<a href="#core:construct">core:construct</a>]
+[<a href="#core:duplicate">core:duplicate</a>]
+[<a href="#core:exit">core:exit</a>]
+[<a href="#core:get">core:get</a>]
+[<a href="#core:goto">core:goto</a>]
+[<a href="#core:if">core:if</a>]
+[<a href="#core:ifAny">core:ifAny</a>]
+[<a href="#core:ifNot">core:ifNot</a>]
+[<a href="#core:ifNotAny">core:ifNotAny</a>]
+[<a href="#core:invoke">core:invoke</a>]
+[<a href="#core:load">core:load</a>]
+[<a href="#core:notAnd">core:notAnd</a>]
+[<a href="#core:notOr">core:notOr</a>]
+[<a href="#core:or">core:or</a>]
+[<a href="#core:pop">core:pop</a>]
+[<a href="#core:put">core:put</a>]
+[<a href="#core:remove">core:remove</a>]
+[<a href="#core:string">core:string</a>]
+[<a href="#core:suspend">core:suspend</a>]
+[<a href="#core:swap">core:swap</a>]
+</div>
+
+<div align="center">
+<h2>Core Step Library - Step Definitions</h2>
+</div>
+
+<a name="core:and"></a>
+<h3>core:and</h3>
+
+<p>The <em>core:and</em> Step evaluates the properties specified by all nested
+<code>&lt;core:descriptor&gt;</code> elements, and transfers control to the
+specified step if ALL of them are <code>true</code> (if boolean) or not null
+(if Object).  To avoid non-deterministic evaluation stack behavior, all of
+the nested <code>&lt;core:descriptor&gt;</code> elements are always
+evaluated.</p>
+
+<p>The <em>core:and</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>step</strong> - Identifier of the Step (within this Activity) to
+    which control should be transferred if the condition is met.</li>
+</ul>
+
+<p>You may nest any number of <a href="#core:descriptor">core:descriptor</a>
+elements within a <em>core:and</em> element.  All of them will be evaluated
+in order to determine whether or not a branch to the Step specified by the
+<em>step</em> attribute should occur or not.</p>
+
+<p>In the following example, control will branch to the Step labelled
+<code>ok</code> if all of the specified properties of the <code>address</code>
+bean return non-null String values.  Otherwise, control will be transferred
+(via the <em>core:goto</em> Step) to the Step labelled <code>notOk</code>.</p>
+<pre>
+  <strong>&lt;core:and step="ok"&gt;</strong>
+    &lt;core:descriptor xpath="address/street1"/&gt;
+    &lt;core:descriptor xpath="address/city"/&gt;
+    &lt;core:descriptor xpath="address/state"/&gt;
+    &lt;core:descriptor xpath="address/zipCode"/&gt;
+  <strong>&lt;/core:and&gt;</strong>
+  &lt;core:goto step="notOk"/&gt;
+</pre>
+
+
+<a name="core:break"></a>
+<h3>core:break</h3>
+
+<p>The <em>core:break</em> Step can be used inside an iteration loop (such as
+<code>core:while</code>, <code>core:whileAny</code>,
+<code>core:whileNot</code>, and <code>core:whileNotAny</code>) to prematurely
+exit from the current iteration, and force the termination of the loop.  Thus,
+it has semantics similar to the "break" statement in programming languages
+like Java and C/C++.</p>
+
+<p>The <em>core:break</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the example below, the loop will repeated as long as the
+<code>loopNow</code> attribute returns a positive result.  However, the last
+iteration will also be prematurely broken if the <code>breakNow</code>
+attribute returns a positive loop:</p>
+<pre>
+  &lt;core:while&gt;
+    &lt;core:descriptor xpath="loopNow"/&gt;
+    ... Steps executed if "loopNow" is positive ...
+    &lt;core:if&gt;
+      &lt;core:descriptor xpath="breakNow"/&gt;
+      <strong>&lt;core:break/&gt;</strong>
+    &lt;/core:if&gt;
+    ... Steps executed if "loopNow" is positive and ...
+    ... "breakNow" is negative ...
+  &lt;/core:while&gt;
+</pre>
+
+
+<a name="core:call"></a>
+<h3>core:call</h3>
+
+<p>The <em>core:call</em> Step pops the top value from the evaluation stack,
+which must be an <a href="../Activity.html">Activity</a>, and initiates a
+"subroutine call" to execute this Activity before resuming the current one.
+Control will be returned to the step following this one, once the called
+Activity executes an <a href="#core:exit">core:exit</a> Step, or the last
+defined Step in the Activity has been executed.</p>
+
+<p>The <em>core:call</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the example below, the <code>activity</code> property of the
+<code>process</code> bean is assumed to return an instance of Activity that
+is to be executed to accomplish a portion of a business process.  This allows
+components to manage the overall control flow dynamically.</p>
+<pre>
+  &lt;core:get&gt;
+    &lt;core:descriptor xpath="process/activity"/&gt;
+  &lt;/core:get&gt;
+  <strong>&lt;core:call/&gt;</strong>
+</pre>
+
+
+<a name="core:construct"></a>
+<h3>core:construct</h3>
+
+<p>The <em>core:construct</em> Step creates a new object of the specified
+class, and pushes it onto the stack.  The specified class, and the optional
+argument(s) to the constructor, are defined by the nested
+<a href="core:descriptor">core:descriptor</a> elements.</p>
+
+<p>The <em>core:construct</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  They are interpreted as follows:</p>
+<ul>
+<li>The <strong>first</strong> descriptor must identify an object of type
+    <code>java.lang.Class</code>, representing the Class of the object to be
+    created.  For script readability, you can use <code>core:class</code> as an
+    alias for <code>core:descriptor</code> in the first nested descriptor,
+    but it is interpreted identically.</li>
+<li>Any subsequent descriptors represent arguments to the constructor, in the
+    order they are defined on the constructor itself.  The
+    workflow engine will attempt to find a matching constructor on the
+    specified class (throwing an exception if none can be found), and will
+    then use that constructor to instantiate a new instance.
+</ul>
+
+<p><strong>FIXME</strong> - Currently, this Step does not correctly recognize
+constructors that accept primitive argument types.</p>
+
+<p><strong>FIXME</strong> - We need a better way to deal with exceptions
+(either checked or unchecked) thrown by calling the constructor.</p>
+
+<p>In the example below, it is assumed that the top item on the evaluation
+stack is an instance of <code>java.lang.Class</code>, produced by some
+unspecified previous processing.  This class has a constructor that takes
+two arguments - a <code>java.util.Map</code> and a
+<code>java.lang.String</code> - that are returned by appropriate bean
+properties.</p>
+<pre>
+  <strong>&lt;core:construct&gt;</strong>
+    &lt;core:class/&gt;   &lt;-- Top item is a Class --&gt;
+    &lt;core:descriptor xpath="foo/map" type="java.util.Map"/&gt;
+    &lt;core:descriptor xpath="bar/string"/&gt;
+  <strong>&lt;/core:construct&gt;</strong>
+</pre>
+
+
+<a name="core:continue"></a>
+<h3>core:continue</h3>
+
+<p>The <em>core:continue</em> Step can be used inside an iteration loop (such
+as <code>core:while</code>, <code>core:whileAny</code>,
+<code>core:whileNot</code>, and <code>core:whileNotAny</code>) to prematurely
+return to the conditional test at the top of the loop, to determine whether it
+should be repeated again.  Thus, it has semantics similar to the "continue"
+statement in programming languages like Java and C/C++.</p>
+
+<p>The <em>core:continue</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the example below, the loop will repeated as long as the
+<code>loopNow</code> attribute returns a positive result.  If the
+<code>continueNow</code> attribute is also positive, that iteration will be
+prematurely stopped, and <code>loopNow</code> will be tested again for the
+next iteration:</p>
+<pre>
+  &lt;core:while&gt;
+    &lt;core:descriptor xpath="loopNow"/&gt;
+    ... Steps executed if "loopNow" is positive ...
+    &lt;core:if&gt;
+      &lt;core:descriptor xpath="continueNow"/&gt;
+      <strong>&lt;core:continue/&gt;</strong>
+    &lt;/core:if&gt;
+    ... Steps executed if "loopNow" is positive ...
+    ... and "continueNow" is negative ...
+  &lt;/core:while&gt;
+</pre>
+
+
+<a name="core:duplicate"></a>
+<h3>core:duplicate</h3>
+
+<p>The <em>core:duplicate</em> Step peeks at the top value on the evaluation
+stack and pushes another copy of it onto the stack.  This is useful in
+scenarios where you execute Steps that consume items from the stack, but you
+wish to maintain a reference to the top object.</p>
+
+<p>The <em>core:duplicate</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the example below, the script wants to display the top item on the
+stack (for debugging purposes) without consuming it.</p>
+<pre>
+  <strong>&lt;core:duplicate/&gt;</strong>
+  &lt;io:display&gt;
+    &lt;io:descriptor/&gt;   &lt;-- Consumes top stack item --&gt;
+  &lt;/io:display&gt;
+</pre>
+
+<a name="core:exit"></a>
+<h3>core:exit</h3>
+
+<p>The <em>core:exit</em> Step causes execution of the current Activity to be
+completed, just as if the last Step in the Activity had been executed.  If this
+Activity was executed as the result of a <a href="#core:call">core:call</a>
+invocation, control will resume with the next Step in the calling Activity.
+Otherwise, the <code>Context.execute()</code> call from the application will
+return control to the calling application.</p>
+
+<p>The <em>core:exit</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+
+<a name="core:get"></a>
+<h3>core:get</h3>
+
+<p>The <em>core:get</em> Step makes a copy of the properties specified
+by all nested <code>&lt;core:descriptor&gt;</code> elements, and pushes them
+on to the evaluation stack, in the order that the descriptors are listed.</p>
+
+<p>The <em>core:get</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>You may nest any number of <a href="#core:descriptor">core:descriptor</a>
+elements within a <em>core:get</em> element.  All of them will be evaluated
+in the order listed, and the corresponding property values will be pushed on to
+the evaluation stack.</p>
+
+<p>In the following example, the four specified properties of the
+<code>address</code> bean will be extracted and pushed on to the
+evaluation stack.</p>
+<pre>
+  <strong>&lt;core:get&gt;</strong>
+    &lt;core:descriptor xpath="address/street1"/&gt;
+    &lt;core:descriptor xpath="address/city"/&gt;
+    &lt;core:descriptor xpath="address/state"/&gt;
+    &lt;core:descriptor xpath="address/zipCode"/&gt;
+  <strong>&lt;/core:get&gt;</strong>
+</pre>
+
+
+<a name="core:goto"></a>
+<h3>core:goto</h3>
+
+<p>The <em>core:goto</em> Step unconditionally transfers control to the
+Step specified by the <code>step</code> attribute.  This value must match
+the <code>id</code> attribute of some other Step in the current Activity,
+which can occur either before or after the current Step.
+
+<p>The <em>core:goto</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>step</strong> - Identifier of the Step to which control
+    should be unconditionally transferred.</li>
+</ul>
+
+
+<a name="core:if"></a>
+<h3>core:if</h3>
+
+<p>The <em>core:if</em> Step conditionally executes the immediately
+nested steps one time, if and only if <strong>ALL</strong> of the
+nested Descriptors evaluate to a <strong>positive</strong> result (i.e.
+boolean true, non-null String with length greater than zero, numeric value
+other than zero, or non-null for an Object).  To avoid non-deterministic
+evaluation stack behavior, all of the specified Descriptors are always
+evaluated exactly once.</p>
+
+<p>The <em>core:if</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>In the example below, the nested block is executed because both Descriptors
+evaluate to positive results:</p>
+<pre>
+  &lt;core:string value="Non-Null String 1"/&gt;
+  &lt;core:string value="Non-Null String 2"/&gt;
+  <strong>&lt;core:if&gt;</strong>
+    &lt;core:descriptor/&gt;    &lt;-- Pop top stack item --&gt;
+    &lt;core:descriptor/&gt;    &lt;-- Pop next stack item --&gt;
+    ... Steps placed here WILL be executed ...
+  <strong>&lt;/core:if&gt;</strong>
+</pre>
+
+
+<a name="core:ifAny"></a>
+<h3>core:ifAny</h3>
+
+<p>The <em>core:ifAny</em> Step conditionally executes the immediately
+nested steps one time, if and only if <strong>ANY</strong> of the
+nested Descriptors evaluate to a <strong>positive</strong> result (i.e.
+boolean true, non-null String with length greater than zero, numeric value
+other than zero, or non-null for an Object).  To avoid non-deterministic
+evaluation stack behavior, all of the specified Descriptors are always
+evaluated exactly once.</p>
+
+<p>The <em>core:ifAny</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>In the example below, the nested block is executed because the second
+Descriptor evaluates to a positive result:</p>
+<pre>
+  &lt;core:string value=""/&gt;
+  &lt;core:string value="Non-Null String"/&gt;
+  <strong>&lt;core:ifAny&gt;</strong>
+    &lt;core:descriptor/&gt;    &lt;-- Pop top stack item --&gt;
+    &lt;core:descriptor/&gt;    &lt;-- Pop next stack item --&gt;
+    ... Steps placed here WILL be executed ...
+  <strong>&lt;/core:ifAny&gt;</strong>
+</pre>
+
+
+<a name="core:ifNot"></a>
+<h3>core:ifNot</h3>
+
+<p>The <em>core:ifNot</em> Step conditionally executes the immediately
+nested steps one time, if and only if <strong>ANY</strong> of the
+nested Descriptors evaluate to a <strong>negative</strong> result (i.e.
+boolean false, null or zero-length String, numeric value
+equal zero, or null for an Object).  To avoid non-deterministic
+evaluation stack behavior, all of the specified Descriptors are always
+evaluated exactly once.</p>
+
+<p>The <em>core:ifNot</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>In the example below, the nested block is executed because the first
+Descriptor evaluates to a negative result:</p>
+<pre>
+  &lt;core:string value=""/&gt;
+  &lt;core:string value="Non-Null String"/&gt;
+  <strong>&lt;core:ifNot&gt;</strong>
+    &lt;core:descriptor/&gt;    &lt;-- Pop top stack item --&gt;
+    &lt;core:descriptor/&gt;    &lt;-- Pop next stack item --&gt;
+    ... Steps placed here WILL be executed ...
+  <strong>&lt;/core:ifNot&gt;</strong>
+</pre>
+
+
+<a name="core:ifNotAny"></a>
+<h3>core:ifNotAny</h3>
+
+<p>The <em>core:ifNotAny</em> Step conditionally executes the immediately
+nested steps one time, if and only if <strong>ALL</strong> of the
+nested Descriptors evaluate to a <strong>negative</strong> result (i.e.
+boolean false, null or zero-length String, numeric value
+equal zero, or null for an Object).  To avoid non-deterministic
+evaluation stack behavior, all of the specified Descriptors are always
+evaluated exactly once.</p>
+
+<p>The <em>core:ifNotAny</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>In the example below, the nested block is executed because both
+Descriptors evaluate to a negative result:</p>
+<pre>
+  &lt;core:string value=""/&gt;
+  &lt;core:string value=""/&gt;
+  <strong>&lt;core:ifNotAny&gt;</strong>
+    &lt;core:descriptor/&gt;    &lt;-- Pop top stack item --&gt;
+    &lt;core:descriptor/&gt;    &lt;-- Pop next stack item --&gt;
+    ... Steps placed here WILL be executed ...
+  <strong>&lt;/core:ifNotAny&gt;</strong>
+</pre>
+
+
+<a name="core:invoke"></a>
+<h3>core:invoke</h3>
+
+<p>The <em>core:invoke</em> Step calls a specified method on a specified
+bean instance, passing the specified values, and pushes the return value
+(if any) on to the evaluation tack.  The specified bean instance, and the
+arguments to be passed, are defined by the nested
+<a href="core:descriptor">core:descriptor</a> elements.</p>
+
+<p>The <em>core:invoke</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>method</strong> - Name of the method to be called on the
+    bean instance specified by the first nested descriptor.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  They are interpreted as follows:</p>
+<ul>
+<li>The <strong>first</strong> descriptor must identify an non-null instance
+    of any Java class.
+    For script readability, you can use <code>core:bean</code> as an
+    alias for <code>core:descriptor</code> in the first nested descriptor,
+    but it is interpreted identically.</li>
+<li>Any subsequent descriptors represent arguments to the method, in the
+    order they are defined on the constructor itself.  The
+    workflow engine will attempt to find a matching method on the
+    specified class (throwing an exception if none can be found), and will
+    then use that method to perform the call.
+</ul>
+
+<p><strong>FIXME</strong> - Currently, this Step does not correctly recognize
+constructors that accept primitive argument types.</p>
+
+<p><strong>FIXME</strong> - We need a better way to deal with exceptions
+(either checked or unchecked) thrown by calling the method.</p>
+
+<p>In the example below, it is assumed that the Customer bean specified
+by the first descriptor includes a public <code>addAddress</code> method
+that takes a String argument (the address type), and an address object
+(ours is in the "address" bean).</p>
+<pre>
+  &lt;core:string value="Home"/&gt;
+  <strong>&lt;core:invoke method="addAddress"&gt;</strong>
+    &lt;core:bean xpath="customer"/&gt;
+    &lt;core:descriptor/&gt;    &lt;-- The String we just pushed --&gt;
+    &lt;core:descriptor xpath="address"/&gt;
+  <strong>&lt;/core:invoke&gt;</strong>
+</pre>
+
+<p>In this case, the <code>addAddress()</code> method is of type
+<code>void</code>, so it returns no value.  If a value had been returned,
+it would have been pushed on to the evaluation stack.</p>
+
+
+<a name="core:load"></a>
+<h3>core:load</h3>
+
+<p>The <em>core:load</em> Step causes the specified
+<code>java.lang.Class</code> to be loaded, and the corresponding
+<code>Class</code> object pushed onto the top of the execution stack.
+The name of the class to be loaded can be specified either statically
+or dynamically.</p>
+
+<p>The <em>core:load</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>name</strong> - Fully qualified name of the Java class to be
+    loaded.  If not specified, the top of the evaluation stack will be
+    popped, converted to a String (if necessary), and used as the name of
+    the Class to be loaded.</li>
+<li><strong>thread</strong> - Boolean attribute that determines whether the
+    class should be loaded from the current Thread's context class loader
+    if set to <code>true</code>.  By default, the class is loaded from the
+    same class loader that loaded the <code>LoadStep</code> implementation
+    class.</li>
+</ul>
+
+<p>In the example below, the <code>java.util.Date</code> class is loaded, and
+a new <code>Date</code> instance is constructed using the zero-arguments
+constructor and pushed on to the evaluation stack.</p>
+<pre>
+  <strong>&lt;core:load name="java.util.Date"/&gt;</strong>
+  &lt;core:construct&gt;
+    &lt;core:descriptor/&gt;   &lt;-- Consumes top item from the stack --&gt;
+  &lt;/core:construct&gt;
+</pre>
+
+
+<a name="notAnd"></a>
+<h3>core:notAnd</h3>
+
+<p>The <em>core:notAnd</em> Step evaluates the properties specified by all
+nested <code>&lt;core:descriptor&gt;</code> elements, and transfers control
+to the specified step if ALL of them are <code>false</code> (if boolean) or
+null (if Object).  To avoid non-deterministic evaluation stack behavior, all of
+the nested <code>&lt;core:descriptor&gt;</code> elements are
+always evaluated.</p>
+
+<p><em>NOTE:</em> - This is the exact opposite of
+<a href="#and">and</a>.</p>
+
+<p>The <em>core:notAnd</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>step</strong> - Identifier of the Step (within this Activity) to
+    which control should be transferred if the condition is met.</li>
+</ul>
+
+<p>You may nest any number of <a href="#core:descriptor">core:descriptor</a>
+elements within a <em>core:notAnd</em> element.  All of them will be evaluated
+in order to determine whether or not a branch to the Step specified by the
+<em>step</em> attribute should occur or not.</p>
+
+<p>In the following example, control will branch to the Step labelled
+<code>empty</code> if all of the specified properties of the
+<code>address</code> bean return null String values.  Otherwise, control will
+be transferred (via the <em>core:goto</em> Step) to the Step labelled
+<code>notEmpty</code>.</p>
+<pre>
+  <strong>&lt;core:notAnd step="empty"&gt;</strong>
+    &lt;core:descriptor xpath="address/street1"/&gt;
+    &lt;core:descriptor xpath="address/city"/&gt;
+    &lt;core:descriptor xpath="address/state"/&gt;
+    &lt;core:descriptor xpath="address/zipCode"/&gt;
+  <strong>&lt;/core:notAnd&gt;</strong>
+  &lt;core:goto step="notEmpty"/&gt;
+</pre>
+
+
+<a name="core:notOr"></a>
+<h3>core:notOr</h3>
+
+<p>The <em>core:notOr</em> Step evaluates the properties specified by all
+nested <code>&lt;core:descriptor&gt;</code> elements, and transfers control
+to the specified step if ANY of them are <code>false</code> (if boolean) or
+null (if Object).  To avoid non-deterministic evaluation stack behavior, all of
+the nested <code>&lt;core:descriptor&gt;</code> elements are
+always evaluated.</p>
+
+<p><em>NOTE:</em> - This is the exact opposite of
+<a href="#or">or</a>.</p>
+
+<p>The <em>core:notOr</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>step</strong> - Identifier of the Step (within this Activity) to
+    which control should be transferred if the condition is met.</li>
+</ul>
+
+<p>You may nest any number of <a href="#core:descriptor">core:descriptor</a>
+elements within a <em>core:or</em> element.  All of them will be evaluated
+in order to determine whether or not a branch to the Step specified by the
+<em>step</em> attribute should occur or not.</p>
+
+<p>In the following example, control will branch to the Step labelled
+<code>notOk</code> if any of the specified properties of the
+<code>address</code> bean return null String values.  Otherwise,
+control will be transferred (via the <em>core:goto</em> Step)
+to the Step labelled <code>ok</code>.</p>
+<pre>
+  <strong>&lt;core:notOr step="notOk"&gt;</strong>
+    &lt;core:descriptor xpath="address/street1"/&gt;
+    &lt;core:descriptor xpath="address/city"/&gt;
+    &lt;core:descriptor xpath="address/state"/&gt;
+    &lt;core:descriptor xpath="address/zipCode"/&gt;
+  <strong>&lt;/core:notOr&gt;</strong>
+  &lt;core:goto step="ok"/&gt;
+</pre>
+
+
+<a name="core:or"></a>
+<h3>core:or</h3>
+
+<p>The <em>core:or</em> Step evaluates the properties specified by all nested
+<code>&lt;core:descriptor&gt;</code> elements, and transfers control to the
+specified step if ANY of them are <code>true</code> (if boolean) or not null
+(if Object).  To avoid non-deterministic evaluation stack behavior, all of
+the nested <code>&lt;core:descriptor&gt;</code> elements are
+always evaluated.</p>
+
+<p>The <em>core:or</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>step</strong> - Identifier of the Step (within this Activity) to
+    which control should be transferred if the condition is met.</li>
+</ul>
+
+<p>You may nest any number of <a href="#core:descriptor">core:descriptor</a>
+elements within a <em>core:or</em> element.  All of them will be evaluated
+in order to determine whether or not a branch to the Step specified by the
+<em>step</em> attribute should occur or not.</p>
+
+<p>In the following example, control will branch to the Step labelled
+<code>selected</code> if at least one of the specified properties of the
+<code>options</code> object (presumably recording a set of boolean options,
+perhaps initialized from a series of checkboxes on an HTML form) is selected.
+Otherwise, control will be transferred (via the <em>core:goto</em> Step) to
+the Step labelled <code>notSelected</code>.</p>
+<pre>
+  <strong>&lt;core:or step="selected"&gt;</strong>
+    &lt;core:descriptor xpath="options/red"/&gt;
+    &lt;core:descriptor xpath="options/blue"/&gt;
+    &lt;core:descriptor xpath="options/green"/&gt;
+    &lt;core:descriptor xpath="options/white"/&gt;
+  &lt;/core:or&gt;
+  <strong>&lt;core:goto step="notSelected"/&gt;</strong>
+</pre>
+
+<a name="core:pop"></a>
+<h3>core:pop</h3>
+
+<p>The <em>core:pop</em> Step unconditionally pops the top object off of
+the evaluation stack, and throws it away.</p>
+
+<p>The <em>core:pop</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+
+<a name="core:put"></a>
+<h3>core:put</h3>
+
+<p>The <em>core:put</em> Step pops a value off of the evaluation stack
+for each nested <code>&lt;core:descriptor&gt;</code> element, and sets the
+property specified by the descriptor, in the order that the descriptors
+are listed.</p>
+
+<p>The <em>core:put</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>You may nest any number of <a href="#core:descriptor">core:descriptor</a>
+elements within a <em>core:put</em> element.  All of them will be evaluated
+in the order listed, and the corresponding property values will be set from values
+popped from the evaluation stack.</p>
+
+<p>In the following example, the four specified properties of the
+<code>address</code> bean will be set from values popped off of the
+evaluation stack (presumably put there by processing like that of the
+<code>core:get</code> example).</p>
+<pre>
+  <strong>&lt;core:put&gt;</strong>
+    &lt;core:descriptor xpath="address/zipCode"/&gt;
+    &lt;core:descriptor xpath="address/state"/&gt;
+    &lt;core:descriptor xpath="address/city"/&gt;
+    &lt;core:descriptor xpath="address/street1"/&gt;
+  <strong>&lt;/core:put&gt;</strong>
+</pre>
+
+
+<a name="core:remove"></a>
+<h3>core:remove</h3>
+
+<p>The <em>core:remove</em> Step evaluates the nested descriptors, and
+removes the corresponding objects from the appropriate Scope in our Context,
+in the order that the nested descriptors are specified.  After objects are removed,
+they are no longer accessible via Steps like <a href="#core:get">core:get</a>.</p>
+
+<p>The <em>core:remove</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the example below, the "address" and "customer" beans are removed
+from our local Context, presumably because they are no longer needed:</p>
+<pre>
+  <strong>&lt;core:remove&gt;</strong>
+    &lt;core:descriptor xpath="address"/&gt;
+    &lt;core:descriptor xpath="customer"/&gt;
+  <strong>&lt;/core:remove&gt;</strong>
+</pre>
+
+
+<a name="core:string"></a>
+<h3>core:string</h3>
+
+<p>The <em>core:string</em> Step pushes the specified literal String value
+onto the top of the evaluation stack.</p>
+
+<p>The <em>core:string</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+<li><strong>value</strong> - The literal String value to be pushed.</li>
+</ul>
+
+
+<a name="core:suspend"></a>
+<h3>core:suspend</h3>
+
+<p>The <em>core:suspend</em> Step signals our
+<a href="../Context.html">Context</a> to suspend the execution of the Activity
+being processed.  The most recent <code>Context.execute()</code> call will
+return immediately.  On the next call to <code>Context.execute()</code>,
+processing will continue with the Step after this one.</p>
+
+<p>This Step is designed for scenarios where you wish to allow the application
+that is managing your workflows to interact with the user before proceeding.
+It is especially useful in a web environment, where Activity execution
+<strong>must</strong> be suspended in order to complete the current
+<code>HttpServletResponse</code>, and await the next
+<code>HttpServletRequest</code>.</p>
+
+<p><em>Note</em> - It does not matter how deeply nested you might be in
+<a href="#core:call">core:call</a> calls to subordinate Activity executions.
+The state of the entire computation is immediately suspended, and will resume
+on the next call to <code>Context.execute()</code>, without the calling
+application needing to be aware of the nesting.</p>
+
+<p>The <em>core:suspend</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>In the following example, it is assumed that you are using the Workflow
+system in an MVC-style framework, which uses
+<code>RequestDispatcher.forward()</code> to pass control to the resource
+responsible for creating a particular response.  Control will be suspended
+until the next request comes in, at which point execution will be resumed.
+Thus, a simple multi-page interaction could be scripted like this (in a real
+scenario, you would want to deal with "next page" and "previous page"
+navigation links as well).</p>
+<pre>
+  &lt;web:forward page="/page-1.jsp"/&gt;
+  <strong>&lt;core:suspend/&gt;</strong>
+  ... process first input request ...
+  &lt;web:forward page="/page=2.jsp"/&gt;
+  <strong>&lt;core:suspend/&gt;</strong>
+  ... process second input request ...
+</pre>
+
+
+<a name="core:swap"></a>
+<h3>core:swap</h3>
+
+<p>The <em>core:swap</em> Step swaps the top two items on the evaluation
+stack.  This can be useful when previous processing has generated items on the
+stack that are not in the desired order for future processing.</p>
+
+<p>The <em>core:swap</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+
+<a name="core:while"></a>
+<h3>core:while</h3>
+
+<p>The <em>core:while</em> Step executes the immediately nested steps
+zero or more times, if and only if <strong>ALL</strong> of the
+nested Descriptors evaluate to a <strong>positive</strong> result (i.e.
+boolean true, non-null String with length greater than zero, numeric value
+other than zero, or non-null for an Object) at the beginning of the loop.
+To avoid non-deterministic evaluation stack behavior, all of the specified
+Descriptors are always evaluated exactly once.</p>
+
+<p>The <em>core:while</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>You can nest a <em>core:continue</em> inside this block to cause control to
+be transferred back to the top of the loop for the next test, or a
+<em>core:break</em> to uncoditionally terminate execution of this iteration
+and skip any further iterations.</p>
+
+<p>In the example below, the nested block is executed repeatedly, as long as
+the value of both the <code>doit</code> and <code>again</code> attributes
+are positive:</p>
+<pre>
+  <strong>&lt;core:while&gt;</strong>
+    &lt;core:descriptor xpath="doit"/&gt;
+    &lt;core:descriptor xpath="again"/&gt;
+    ... Steps placed here may be repeatedly executed ...
+  <strong>&lt;/core:while&gt;</strong>
+</pre>
+
+
+<a name="core:whileAny"></a>
+<h3>core:whileAny</h3>
+
+<p>The <em>core:whileAny</em> Step executes the immediately nested steps
+zero or more times, if and only if <strong>ANY</strong> of the
+nested Descriptors evaluate to a <strong>positive</strong> result (i.e.
+boolean true, non-null String with length greater than zero, numeric value
+other than zero, or non-null for an Object) at the beginning of the loop.
+To avoid non-deterministic evaluation stack behavior, all of the specified
+Descriptors are always evaluated exactly once.</p>
+
+<p>The <em>core:whileAny</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>You can nest a <em>core:continue</em> inside this block to cause control to
+be transferred back to the top of the loop for the next test, or a
+<em>core:break</em> to uncoditionally terminate execution of this iteration
+and skip any further iterations.</p>
+
+<p>In the example below, the nested block is executed repeatedly, as long as
+the value of either the <code>doit</code> or <code>again</code> attributes
+are positive:</p>
+<pre>
+  <strong>&lt;core:whileAny&gt;</strong>
+    &lt;core:descriptor xpath="doit"/&gt;
+    &lt;core:descriptor xpath="again"/&gt;
+    ... Steps placed here may be repeatedly executed ...
+  <strong>&lt;/core:whileAny&gt;</strong>
+</pre>
+
+
+<a name="core:whileNot"></a>
+<h3>core:whileNot</h3>
+
+<p>The <em>core:whileNot</em> Step executes the immediately nested steps
+zero or more times, if and only if <strong>ALL</strong> of the
+nested Descriptors evaluate to a <strong>negative</strong> result (i.e.
+boolean false, null or zero-length String, numeric value
+equal to zero, or null for an Object) at the beginning of the loop.
+To avoid non-deterministic evaluation stack behavior, all of the specified
+Descriptors are always evaluated exactly once.</p>
+
+<p>The <em>core:whileNot</em> element recognizes the following attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>You can nest a <em>core:continue</em> inside this block to cause control to
+be transferred back to the top of the loop for the next test, or a
+<em>core:break</em> to uncoditionally terminate execution of this iteration
+and skip any further iterations.</p>
+
+<p>In the example below, the nested block is executed repeatedly, as long as
+the value of both the <code>doit</code> and <code>again</code> attributes
+are negative:</p>
+<pre>
+  <strong>&lt;core:whileNot&gt;</strong>
+    &lt;core:descriptor xpath="doit"/&gt;
+    &lt;core:descriptor xpath="again"/&gt;
+    ... Steps placed here may be repeatedly executed ...
+  <strong>&lt;/core:whileNot&gt;</strong>
+</pre>
+
+
+<a name="core:whileNotAny"></a>
+<h3>core:whileNotAny</h3>
+
+<p>The <em>core:whileNotAny</em> Step executes the immediately nested steps
+zero or more times, if and only if <strong>ANY</strong> of the
+nested Descriptors evaluate to a <strong>negative</strong> result (i.e.
+boolean false, null or zero-length String, numeric value
+equal to zero, or null for an Object) at the beginning of the loop.
+To avoid non-deterministic evaluation stack behavior, all of the specified
+Descriptors are always evaluated exactly once.</p>
+
+<p>The <em>core:whileNotAny</em> element recognizes the following
+attributes:</p>
+<ul>
+<li><strong>id</strong> - Optional identifier of this Step, which can be used
+    as the destination for control transfers.  If specified, must be unique
+    within the current Activity.</li>
+</ul>
+
+<p>At least one nested <em>core:descriptor</em> element is required, although
+more than one are allowed.  Each of them is evaluated to determine whether it
+returns a positive or negative result, then all of the results are combined
+as described above to determine whether the nested Steps are executed.</p>
+
+<p>You can nest a <em>core:continue</em> inside this block to cause control to
+be transferred back to the top of the loop for the next test, or a
+<em>core:break</em> to uncoditionally terminate execution of this iteration
+and skip any further iterations.</p>
+
+<p>In the example below, the nested block is executed repeatedly, as long as
+the value of eiether the <code>doit</code> or <code>again</code> attributes
+is negative:</p>
+<pre>
+  <strong>&lt;core:whileNotAny&gt;</strong>
+    &lt;core:descriptor xpath="doit"/&gt;
+    &lt;core:descriptor xpath="again"/&gt;
+    ... Steps placed here may be repeatedly executed ...
+  <strong>&lt;/core:whileNotAny&gt;</strong>
+</pre>
+
+
+<div align="center">
+<h2>Core Step Library - Nested Elements</h2>
+</div>
+
+<a name="core:descriptor"></a>
+<h3>core:descriptor</h3>
+
+<p>A <em>core:descriptor</em> element is a description of the mechanism
+by which an arbitrary Java object (typically a JavaBean) in some Scope, is
+referenced.  This element recognizes the following attributes:</p>
+<ul>
+<li><strong>name</strong> - The name under which this bean is stored,
+    optionally located in the Scope specified by the <code>scope</code>
+    attribute.</li>
+<li><strong>scope</strong> - The name of the Scope within which to
+    search for the bean named by the <code>name</code> attribute.  If
+    not specified, the corresponding bean will be searched for in all Scopes,
+    in ascending numeric order.</li>
+<li><strong>type</strong> - Fully qualified Java class name that is expected
+    (or set) via this descriptor.  If not specified, the actual Java class of the
+    corresponding bean will be used.  This is useful, for example, when
+    specifying the arguments to a <a href="#core:invoke">core:invoke</a>
+    Step, and the invoked method expects a Java interface that is implemented
+    by the actual object being passed as a parameter.</li>
+<li><strong>xpath</strong> - An alternative method (to the <code>name</code>
+    and <code>scope</code> attributes) for specifying the bean instance to be
+    accessed by this descriptor.</li>
+</ul>
+
+<p>The syntax for XPath expressions is a sequence of one or more
+identifier strings, separated by forward slash ("/") characters.  The expression
+is evaluated as follows:</p>
+<ul>
+<li>If no slashes are present, the expression is assumed to be the name
+    of an object that is stored in the "local" scope.</li>
+<li>If one slash is present, the value before the slash is assumed to be the
+    name of the scope in which to locate the bean, while the value after the
+    slash is the name under which the bean is stored in that scope.  For
+    example, the WebContext implementation of Context (commonly used
+    when implementing Workflow in a servlet based environment), the scope
+    names "request", "session", and "application" correspond to the
+    request attributes, session attributes, and servlet context attributes
+    provided by the underlying servlet container.</li>
+<li>If more than one slash is present, the value before the first slash
+    is interpreted as a scope name, as above.  The remainder of the
+    expression accessed nested properties of beans, according to the
+    syntax specified by the Commons JXPath package.</li>
+</ul>
+
+<p>When deciding what bean a particular descriptor applies to, the following
+rules are applied, in this priority order:</p>
+<ul>
+<li>If the <em>xpath</em> attribute is set, it is used as an
+    XPath expression identifying the requested object.</li>
+<li>If the <em>name</em> (and optional <em>scope</em>) attributes are
+    specified, they are used to select a particular named bean,
+    optionally found in a particular named scope.</li>
+<li>If none of the conditions above are satisfied, the top object on the
+    evaluation stack of our current <code>Context</code> is popped off the
+    stack and consumed.</li>
+</ul>
+
+<p><strong>FIXME</strong> - Support the <code>property</code> attribute
+for access to bean properties via the Commons Beanutils package.</p>
+
+</body>

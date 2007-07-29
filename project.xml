@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<project>
+  <extend>../commons-build/sandbox-project.xml</extend>
+  <name>Commons Workflow</name>
+  <id>commons-workflow</id>
+  <logo>/images/workflow-logo-white.png</logo>
+  <url>http://jakarta.apache.org/commons/sandbox/workflow/</url>
+  <inceptionYear>2001</inceptionYear>
+  <shortDescription>Commons Workflow</shortDescription>
+  <description>Commons Workflow</description>
+
+  <currentVersion>0.1-dev</currentVersion>
+  <versions>
+  </versions>
+  <branches>
+  </branches>
+
+  <developers>
+    <developer>
+      <name>Craig R. McClanahan</name>
+      <id>craigmcc</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+  </developers>
+  
+  <dependencies>
+    <dependency>
+      <id>servletapi</id>
+      <version>2.3</version>
+    </dependency>
+    <dependency>
+      <id>commons-beanutils</id>
+      <version>1.6</version>
+    </dependency>
+    <dependency>
+      <id>commons-digester</id>
+      <version>1.5</version>
+    </dependency>
+    <dependency>
+      <id>commons-collections</id>
+      <version>2.1</version>
+    </dependency>
+    <dependency>
+      <id>commons-logging</id>
+      <version>1.0.4</version>
+    </dependency>
+    <dependency>
+      <id>commons-jxpath</id>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <id>junit</id>
+      <version>3.8.1</version>
+    </dependency>
+
+    <!-- these two are required by maven -->
+    <dependency><id>xml-apis</id><version>2.0.2</version></dependency>
+    <dependency><id>xerces</id><version>2.0.2</version></dependency>
+    <!-- /these two are required by maven -->
+  </dependencies>
+
+  <build>
+    <unitTest>
+      <includes>
+        <include>org/apache/commons/workflow/TestAll.java</include>
+        <include>org/apache/commons/workflow/adt/TestAll.java</include>
+      </includes>
+    </unitTest>
+  </build>
+</project>
