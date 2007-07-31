@@ -29,7 +29,7 @@ import org.apache.commons.digester.RuleSetBase;
  * Workflow Management System, typically associated with the <em>base</em>
  * prefix.  This library is normally associated with the namespace URI:</p>
  * <pre>
- *   http://jakarta.apache.org/commons/workflow/base
+ *   http://commons.apache.org/workflow/base
  * </pre>
  *
  * <p>This class also serves as a convenience base class for the
@@ -55,7 +55,7 @@ public class BaseRuleSet extends RuleSetBase {
     public BaseRuleSet() {
 
         super();
-        setNamespaceURI("http://jakarta.apache.org/commons/workflow/base");
+        setNamespaceURI("http://commons.apache.org/workflow/base");
 
     }
 

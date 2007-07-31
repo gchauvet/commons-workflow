@@ -27,7 +27,7 @@ import org.apache.commons.workflow.base.BaseRuleSet;
  * <em>io</em> library.  This library is normally associated with the
  * following namespace URI:</p>
  * <pre>
- *   http://jakarta.apache.org/commons/workflow/io
+ *   http://commons.apache.org/workflow/io
  * </pre>
  *
  * @author Craig R. McClanahan
@@ -46,7 +46,7 @@ public class IoRuleSet extends BaseRuleSet {
     public IoRuleSet() {
 
         super();
-        setNamespaceURI("http://jakarta.apache.org/commons/workflow/io");
+        setNamespaceURI("http://commons.apache.org/workflow/io");
 
     }
 

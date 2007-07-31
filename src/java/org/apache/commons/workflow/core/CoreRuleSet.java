@@ -27,7 +27,7 @@ import org.apache.commons.workflow.base.BaseRuleSet;
  * <em>core</em> library.  This library is normally associated with the
  * following namespace URI:</p>
  * <pre>
- *   http://jakarta.apache.org/commons/workflow/core
+ *   http://commons.apache.org/workflow/core
  * </pre>
  *
  * @author Craig R. McClanahan
@@ -47,7 +47,7 @@ public class CoreRuleSet extends BaseRuleSet {
     public CoreRuleSet() {
 
         super();
-        setNamespaceURI("http://jakarta.apache.org/commons/workflow/core");
+        setNamespaceURI("http://commons.apache.org/workflow/core");
 
     }
 

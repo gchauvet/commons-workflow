@@ -1,8 +1,8 @@
 <base:activity id="Web Wizard Demo"
-   xmlns:base="http://jakarta.apache.org/commons/workflow/base"
-   xmlns:core="http://jakarta.apache.org/commons/workflow/core"
-   xmlns:io="http://jakarta.apache.org/commons/workflow/io"
-   xmlns:web="http://jakarta.apache.org/commons/workflow/web">
+   xmlns:base="http://commons.apache.org/workflow/base"
+   xmlns:core="http://commons.apache.org/workflow/core"
+   xmlns:io="http://commons.apache.org/workflow/io"
+   xmlns:web="http://commons.apache.org/workflow/web">
 
   <!-- Reset the session bean properties -->
   <core:invoke id="wizard-0" method="reset">

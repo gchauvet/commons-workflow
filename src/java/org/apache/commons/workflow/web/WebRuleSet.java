@@ -27,7 +27,7 @@ import org.apache.commons.workflow.base.BaseRuleSet;
  * <em>web</em> library.  This library is normally associated with the
  * following namespace URI:</p>
  * <pre>
- *   http://jakarta.apache.org/commons/workflow/web
+ *   http://commons.apache.org/workflow/web
  * </pre>
  *
  * @author Craig R. McClanahan
@@ -46,7 +46,7 @@ public class WebRuleSet extends BaseRuleSet {
     public WebRuleSet() {
 
         super();
-        setNamespaceURI("http://jakarta.apache.org/commons/workflow/web");
+        setNamespaceURI("http://commons.apache.org/workflow/web");
 
     }
 
